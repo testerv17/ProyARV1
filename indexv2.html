@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Smart City AR – V2 (GLB)</title>
+  <title>V2 · Smart City (GLB) · Industria 4.0</title>
 
   <script src="https://aframe.io/releases/1.7.1/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
@@ -12,27 +12,48 @@
     body{margin:0;overflow:hidden;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:#000}
     .a-enter-vr-button{display:none!important;}
 
-    /* HUD Jarvis */
+    /* ===== HUD Jarvis ===== */
     .hud{position:fixed; inset:0; z-index:10; pointer-events:none; color:#eaf6ff;}
     .vignette{position:absolute; inset:-20%;
-      background:radial-gradient(closest-side at 50% 50%, rgba(0,229,255,.07), rgba(0,0,0,.65) 65%, rgba(0,0,0,.92) 100%);
-      mix-blend-mode:screen;}
+      background:
+        radial-gradient(closest-side at 50% 50%, rgba(0,229,255,.08), rgba(0,0,0,.65) 65%, rgba(0,0,0,.92) 100%),
+        radial-gradient(closest-side at 20% 20%, rgba(45,125,255,.08), rgba(0,0,0,0) 55%),
+        radial-gradient(closest-side at 80% 30%, rgba(24,255,154,.06), rgba(0,0,0,0) 50%);
+      mix-blend-mode:screen;
+    }
     .scan{position:absolute; left:-10%; right:-10%; top:-35%; height:38%;
       background:linear-gradient(to bottom, rgba(0,229,255,0), rgba(0,229,255,.10) 45%, rgba(0,229,255,.18) 55%, rgba(0,229,255,0));
-      transform:skewY(-4deg); animation:scan 2.6s linear infinite; opacity:.85;}
+      transform:skewY(-4deg); animation:scan 2.6s linear infinite; opacity:.82;}
     @keyframes scan{0%{transform:translateY(-10%) skewY(-4deg);} 100%{transform:translateY(250%) skewY(-4deg);}}
 
-    .top{position:absolute; left:14px; top:14px; max-width:min(520px,calc(100vw - 28px));
+    .top{
+      position:absolute; left:14px; top:14px; max-width:min(560px,calc(100vw - 28px));
       padding:12px 14px; border-radius:16px; background:rgba(5,10,16,.62);
-      border:1px solid rgba(0,229,255,.20); backdrop-filter:blur(10px);}
-    .top b{display:block; font-weight:1000; letter-spacing:.4px;}
-    .top small{display:block; opacity:.85; margin-top:4px; line-height:1.2}
+      border:1px solid rgba(0,229,255,.20); backdrop-filter:blur(10px);
+      box-shadow:0 10px 30px rgba(0,0,0,.35);
+    }
+    .top b{display:block; font-weight:1000; letter-spacing:.4px; font-size:16px}
+    .top small{display:block; opacity:.85; margin-top:4px; line-height:1.2; font-size:12px}
 
-    .toast{position:fixed; left:50%; bottom:22px; transform:translateX(-50%);
+    .tele{
+      margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;
+    }
+    .pill{
+      font-size:12px; opacity:.95;
+      padding:6px 10px; border-radius:999px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
+    }
+    .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px;box-shadow:0 0 14px currentColor}
+
+    .toast{
+      position:fixed; left:50%; bottom:22px; transform:translateX(-50%);
       padding:12px 14px; border-radius:16px; background:rgba(5,10,16,.78);
       border:1px solid rgba(0,229,255,.25); color:#eaf6ff; font-weight:900;
       backdrop-filter:blur(12px); box-shadow:0 12px 40px rgba(0,0,0,.45);
-      display:none; z-index:9999; pointer-events:none;}
+      display:none; z-index:9999; pointer-events:none;
+      letter-spacing:.2px;
+    }
   </style>
 </head>
 
@@ -42,7 +63,12 @@
     <div class="scan"></div>
     <div class="top">
       <b>V2 · Smart City (GLB) · Industria 4.0</b>
-      <small>Apunta al portataza. Toca un objeto para ver alerta/KPIs (demo).</small>
+      <small>Apunta al portataza. Toca un objeto para ver alerta + etiqueta (demo tipo JARVIS).</small>
+      <div class="tele">
+        <span class="pill"><span class="dot" style="color:#00e5ff;background:#00e5ff"></span>Tracking: <span id="teleTrack">SEARCH</span></span>
+        <span class="pill"><span class="dot" style="color:#18ff9a;background:#18ff9a"></span>Activos: <span id="teleCount">—</span></span>
+        <span class="pill"><span class="dot" style="color:#ff3b3b;background:#ff3b3b"></span>Alerts: <span id="teleAlerts">—</span></span>
+      </div>
     </div>
   </div>
 
@@ -59,9 +85,19 @@
     <a-entity light="type:directional; intensity:1.05" position="1.2 2.3 1.0"></a-entity>
     <a-entity light="type:point; intensity:0.75; distance:2.2" position="0 0.65 0.2"></a-entity>
 
+    <!-- Assets: AJUSTA nombres de archivos si es necesario -->
+    <a-assets>
+      <a-asset-item id="m-semaforo" src="./assets/models/semaforo.glb"></a-asset-item>
+      <a-asset-item id="m-lampara"  src="./assets/models/lampara.glb"></a-asset-item>
+      <a-asset-item id="m-poste"    src="./assets/models/poste.glb"></a-asset-item>
+      <a-asset-item id="m-ed1"      src="./assets/models/edificio1.glb"></a-asset-item>
+      <a-asset-item id="m-ed2"      src="./assets/models/edificio2.glb"></a-asset-item>
+      <a-asset-item id="m-parking"  src="./assets/models/estacionamiento.glb"></a-asset-item>
+    </a-assets>
+
     <!-- Target -->
     <a-entity mindar-image-target="targetIndex:0" id="target0">
-      <!-- Plataforma -->
+      <!-- Plataforma holo -->
       <a-plane rotation="-90 0 0" width="1.25" height="1.25"
         material="color:#07111d; opacity:0.20; transparent:true; metalness:0.2; roughness:0.25"></a-plane>
 
@@ -74,31 +110,32 @@
         <a-animation attribute="material.opacity" to="0.0" dur="2400" easing="easeOutQuad" repeat="indefinite"></a-animation>
       </a-ring>
 
-      <!-- Root -->
+      <!-- Roots -->
       <a-entity id="cityRoot"></a-entity>
       <a-entity id="linkRoot"></a-entity>
     </a-entity>
 
-    <!-- Cámara + cursor (tap) -->
+    <!-- Cámara + cursor -->
     <a-camera position="0 0 0" look-controls="enabled:false">
       <a-cursor raycaster="objects: .pickable" fuse="false" material="color:#00e5ff; opacity:0.9"></a-cursor>
     </a-camera>
-
-    <!-- Assets: precarga GLB -->
-    <a-assets>
-      <!-- AJUSTA nombres a tus archivos reales -->
-      <a-asset-item id="m-semaforo" src="./assets/models/semaforo.glb"></a-asset-item>
-      <a-asset-item id="m-lampara"  src="./assets/models/lampara.glb"></a-asset-item>
-      <a-asset-item id="m-poste"    src="./assets/models/poste.glb"></a-asset-item>
-      <a-asset-item id="m-ed1"      src="./assets/models/edificio1.glb"></a-asset-item>
-      <a-asset-item id="m-ed2"      src="./assets/models/edificio2.glb"></a-asset-item>
-      <a-asset-item id="m-parking"  src="./assets/models/estacionamiento.glb"></a-asset-item>
-    </a-assets>
-
   </a-scene>
 
   <script>
-    // ======== UI + audio ========
+    // ===== billboard para etiquetas (siempre mirar cámara) =====
+    AFRAME.registerComponent('billboard', {
+      tick: function () {
+        const cam = document.querySelector('a-camera');
+        if (!cam) return;
+        this.el.object3D.lookAt(cam.object3D.position);
+      }
+    });
+
+    // ===== UI / audio =====
+    const teleTrack = document.getElementById('teleTrack');
+    const teleCount = document.getElementById('teleCount');
+    const teleAlerts = document.getElementById('teleAlerts');
+
     function showToast(msg, tone='info'){
       const el = document.getElementById('toast');
       el.textContent = msg;
@@ -107,8 +144,7 @@
         tone==='warn'  ? 'rgba(255,178,0,.40)' :
                          'rgba(0,229,255,.25)';
       el.style.display = 'block';
-      el.style.opacity = '1';
-      if (navigator.vibrate) navigator.vibrate([40, 40, 60]);
+      if (navigator.vibrate) navigator.vibrate([35,35,60]);
       clearTimeout(el._t);
       el._t = setTimeout(() => el.style.display='none', 1700);
     }
@@ -127,7 +163,7 @@
       o.start(); o.stop(ctx.currentTime + 0.20);
     }
 
-    // ======== Geo -> mesa ========
+    // ===== Geo utilities =====
     function llToMeters(lon, lat, centerLon, centerLat) {
       const R = 6378137;
       const dLat = (lat - centerLat) * Math.PI / 180;
@@ -138,20 +174,127 @@
     }
     function randInt(a,b){ return Math.floor(a + Math.random()*(b-a+1)); }
 
-    // ======== Model mapping (mezcla por nombre) ========
-    // Puedes cambiar reglas por nombre aquí.
-    const MODEL_MAP = (name, type) => {
+    // ===== Mezcla por nombre =====
+    function pickAssetIdByName(name, type){
       const n = (name || '').toLowerCase();
-      if (n.includes('cámara') || n.includes('camara')) return '#m-poste';      // o crea un modelo "camara.glb" si tienes
+
       if (n.includes('luminaria') || n.includes('lampara')) return '#m-lampara';
       if (n.includes('poste')) return '#m-poste';
+      if (n.includes('semaforo') || n.includes('tráfico') || n.includes('trafico')) return '#m-semaforo';
       if (n.includes('parking') || n.includes('estacion')) return '#m-parking';
-      if (n.includes('semaforo') || n.includes('tráfico')) return '#m-semaforo';
+      if (n.includes('cámara') || n.includes('camara')) return '#m-poste'; // si luego tienes camara.glb, lo cambiamos aquí
+
       if (type === 'building') return '#m-ed1';
       return '#m-semaforo';
+    }
+
+    // ===== Normalización de escala / piso (AJUSTA SI HACE FALTA) =====
+    // Si un modelo sale gigante, BAJA su valor. Si sale chico, SÚBELO.
+    const SCALE_BY_ASSET_ID = {
+      '#m-semaforo': 0.08,
+      '#m-lampara':  0.03,
+      '#m-poste':    0.02,
+      '#m-ed1':      0.06,
+      '#m-ed2':      0.06,
+      '#m-parking':  0.07
     };
 
-    // ======== Crear entidad glb + halo + interacción ========
+    // Offset en Y (para pegar modelos al piso si vienen “volando”)
+    const OFFSETY_BY_ASSET_ID = {
+      '#m-semaforo': 0.00,
+      '#m-lampara':  0.00,
+      '#m-poste':    0.00,
+      '#m-ed1':      0.00,
+      '#m-ed2':      0.00,
+      '#m-parking':  0.00
+    };
+
+    // Rotación opcional por modelo (si quieres orientar edificios)
+    const ROTY_BY_ASSET_ID = {
+      '#m-semaforo': 0,
+      '#m-lampara':  0,
+      '#m-poste':    0,
+      '#m-ed1':      15,
+      '#m-ed2':      -10,
+      '#m-parking':  0
+    };
+
+    // ===== Etiquetas Jarvis =====
+    function makeLabel({title, lines, tone}){
+      const color = tone==='alert' ? '#ff3b3b' : (tone==='warn' ? '#ffb200' : '#00e5ff');
+
+      const label = document.createElement('a-entity');
+      label.setAttribute('billboard','');
+
+      const panel = document.createElement('a-plane');
+      panel.setAttribute('width','0.30');
+      panel.setAttribute('height','0.13');
+      panel.setAttribute('material', `color:#050a10; opacity:0.72; transparent:true;`);
+      panel.setAttribute('position','0 0.22 0');
+      label.appendChild(panel);
+
+      const border = document.createElement('a-plane');
+      border.setAttribute('width','0.306');
+      border.setAttribute('height','0.136');
+      border.setAttribute('material', `color:${color}; opacity:0.22; transparent:true; wireframe:true;`);
+      border.setAttribute('position','0 0.22 0.001');
+      label.appendChild(border);
+
+      const t = document.createElement('a-text');
+      t.setAttribute('value', `${title}\n${lines.join(' · ')}`);
+      t.setAttribute('color', '#eaf6ff');
+      t.setAttribute('align', 'center');
+      t.setAttribute('baseline', 'center');
+      t.setAttribute('width', '0.95');
+      t.setAttribute('position', '0 0.22 0.002');
+      label.appendChild(t);
+
+      return label;
+    }
+
+    function labelForFeature(props, status){
+      const name = (props?.name || '').toLowerCase();
+
+      // Luminaria con datos (si no existen en geojson, se ponen demo)
+      if (name.includes('luminaria') || name.includes('lampara')){
+        const tec = props.tecnologia || 'Sodio';
+        const w = props.watts || 100;
+        const on = (props.encendida !== undefined) ? !!props.encendida : (status !== 'alert');
+        return {
+          title: 'Luminaria',
+          lines: [tec, `${w}W`, on ? 'Encendida' : 'Falla'],
+          tone: on ? 'info' : (status==='warn'?'warn':'alert')
+        };
+      }
+
+      if (name.includes('cámara') || name.includes('camara')){
+        const fps = props.fps || randInt(20,30);
+        const mode = props.mode || 'IA';
+        return {
+          title: 'Cámara',
+          lines: [`${fps} FPS`, mode, status.toUpperCase()],
+          tone: status==='alert'?'alert':(status==='warn'?'warn':'info')
+        };
+      }
+
+      if (props.type === 'building'){
+        const carga = props.carga || randInt(70,98);
+        return {
+          title: props.name || 'Edificio',
+          lines: [`${carga}% carga`, status.toUpperCase(), `${randInt(1,59)}s`],
+          tone: status==='alert'?'alert':(status==='warn'?'warn':'info')
+        };
+      }
+
+      // default sensor
+      return {
+        title: props.name || 'Sensor',
+        lines: [status.toUpperCase(), `${randInt(10,90)}ms`, `${randInt(1,59)}s`],
+        tone: status==='alert'?'alert':(status==='warn'?'warn':'info')
+      };
+    }
+
+    // ===== Halo holográfico por estado =====
     function addHoloHalo(parent, status){
       const c = status==='alert' ? '#ff3b3b' : (status==='warn' ? '#ffb200' : '#00e5ff');
 
@@ -176,48 +319,67 @@
       parent.appendChild(wave);
     }
 
-    function makeGltfNode({name,type,status,kpi,lastSeen}, x, z, yRot=0){
-      const root = document.createElement('a-entity');
-      root.setAttribute('position', `${x} 0 ${z}`);
-      root.setAttribute('rotation', `0 ${yRot} 0`);
-
-      // modelo
-      const model = document.createElement('a-gltf-model');
-      const src = MODEL_MAP(name,type);
-      model.setAttribute('src', src);
-      model.setAttribute('position','0 0 0');
-      model.setAttribute('rotation','0 0 0');
-      model.setAttribute('scale','0.18 0.18 0.18'); // AJUSTA según tamaño real del GLB
-      model.classList.add('pickable');
-
-      // si el GLB trae animación:
-      model.setAttribute('animation-mixer','');
-
-      // halo holográfico
-      addHoloHalo(root, status);
-
-      // Interacción
-      model.addEventListener('click', () => {
-        const tone = status==='alert' ? 'alert' : (status==='warn' ? 'warn' : 'info');
-        const msg =
-          status==='alert' ? `ALERTA: ${name} fuera de umbral` :
-          status==='warn'  ? `Aviso: ${name} en rango alto` :
-                             `OK: ${name} estable`;
-        showToast(msg, tone);
-        pingSound();
-
-        // punch
-        model.setAttribute('animation__p', 'property: scale; to: 0.23 0.23 0.23; dir: alternate; dur: 160; loop: 2; easing: easeOutQuad');
-      });
-
-      root.appendChild(model);
-      return root;
-    }
-
     function makeLink(x1,z1,x2,z2,color){
       const e = document.createElement('a-entity');
       e.setAttribute('line', `start: ${x1} 0.05 ${z1}; end: ${x2} 0.12 ${z2}; color: ${color}; opacity: 0.65`);
       return e;
+    }
+
+    // ===== Construcción GLB node =====
+    function makeGltfNode(feature, x, z){
+      const props = feature.properties || {};
+      const type = props.type || 'sensor';
+      const name = props.name || 'Nodo';
+
+      // status: si lo mandas en geojson, se respeta; si no, demo aleatorio
+      const status = props.status || (Math.random()<0.12 ? 'alert' : (Math.random()<0.22 ? 'warn' : 'ok'));
+
+      const assetId = pickAssetIdByName(name, type);
+      const s = SCALE_BY_ASSET_ID[assetId] ?? 0.06;
+      const oy = OFFSETY_BY_ASSET_ID[assetId] ?? 0.00;
+      const ry = ROTY_BY_ASSET_ID[assetId] ?? 0;
+
+      const root = document.createElement('a-entity');
+      root.setAttribute('position', `${x} 0 ${z}`);
+      root.setAttribute('rotation', `0 ${ry} 0`);
+
+      // halo base
+      addHoloHalo(root, status);
+
+      // wrapper (para offset y piso)
+      const wrap = document.createElement('a-entity');
+      wrap.setAttribute('position', `0 ${oy} 0`);
+
+      const model = document.createElement('a-gltf-model');
+      model.setAttribute('src', assetId);
+      model.setAttribute('position', '0 0 0');
+      model.setAttribute('rotation', '0 0 0');
+      model.setAttribute('scale', `${s} ${s} ${s}`);
+      model.setAttribute('animation-mixer',''); // si trae animación, corre sola
+      model.classList.add('pickable');
+
+      // etiqueta
+      const lab = labelForFeature(props, status);
+      root.appendChild(makeLabel(lab));
+
+      // interacción
+      model.addEventListener('click', () => {
+        const tone = (status==='alert') ? 'alert' : (status==='warn' ? 'warn' : 'info');
+        const msg =
+          status==='alert' ? `ALERTA: ${name} fuera de umbral` :
+          status==='warn'  ? `AVISO: ${name} en rango alto` :
+                             `OK: ${name} estable`;
+
+        showToast(msg, tone);
+        pingSound();
+
+        // punch
+        model.setAttribute('animation__p', `property: scale; to: ${s*1.18} ${s*1.18} ${s*1.18}; dir: alternate; dur: 140; loop: 2; easing: easeOutQuad`);
+      });
+
+      wrap.appendChild(model);
+      root.appendChild(wrap);
+      return { root, status, type, name };
     }
 
     async function boot(){
@@ -225,33 +387,45 @@
       const gj = await res.json();
 
       const feats = (gj.features||[]).filter(f => f.geometry?.type === 'Point');
-      const coords = feats.map(f => f.geometry.coordinates);
+      if (!feats.length){
+        showToast('No hay puntos en demo.geojson', 'warn');
+        return;
+      }
 
+      // center
+      const coords = feats.map(f => f.geometry.coordinates);
       const avgLon = coords.reduce((s,c)=>s+c[0],0)/coords.length;
       const avgLat = coords.reduce((s,c)=>s+c[1],0)/coords.length;
 
-      const SCALE = 0.013; // densidad sobre portataza
-      const points = feats.map((f,i) => {
-        const [lon,lat] = f.geometry.coordinates; // lon,lat
-        const m = llToMeters(lon, lat, avgLon, avgLat);
-        const x = m.x * SCALE;
-        const z = -m.z * SCALE;
-        const p = f.properties || {};
-        const type = p.type || 'sensor';
-        const status = p.status || (Math.random()<0.12 ? 'alert' : (Math.random()<0.22 ? 'warn' : 'ok'));
-        const kpi = (type==='building') ? `${randInt(68,99)}% carga` : `${randInt(12,86)} ms`;
-        const lastSeen = `${randInt(1,59)}s`;
-        return { i, name: p.name || `Nodo ${i+1}`, type, status, kpi, lastSeen, x, z };
-      });
+      const SCALE = 0.013; // densidad sobre portataza (sube si quieres más separación)
+
+      // para links IoT
+      const placed = [];
 
       const cityRoot = document.getElementById('cityRoot');
       const linkRoot = document.getElementById('linkRoot');
       cityRoot.innerHTML = "";
       linkRoot.innerHTML = "";
 
-      // links IoT: sensores -> building más cercano
-      const buildings = points.filter(p => p.type === 'building');
-      const sensors = points.filter(p => p.type !== 'building');
+      feats.forEach((f) => {
+        const [lon, lat] = f.geometry.coordinates; // OJO: debe ser [lon,lat]
+        const m = llToMeters(lon, lat, avgLon, avgLat);
+        const x = m.x * SCALE;
+        const z = -m.z * SCALE;
+
+        const node = makeGltfNode(f, x, z);
+        cityRoot.appendChild(node.root);
+
+        placed.push({ x, z, props: f.properties||{}, status: node.status, type: (f.properties?.type||'sensor') });
+      });
+
+      // telemetry
+      teleCount.textContent = placed.length;
+      teleAlerts.textContent = placed.filter(p => p.status==='alert').length;
+
+      // links: sensores -> building cercano
+      const buildings = placed.filter(p => p.type==='building');
+      const sensors = placed.filter(p => p.type!=='building');
 
       sensors.forEach(s => {
         let best=null, bestD=Infinity;
@@ -266,19 +440,16 @@
         }
       });
 
-      // Render GLB nodes
-      points.forEach(p => {
-        const rot = (p.type==='building') ? 15 : 0;
-        cityRoot.appendChild(makeGltfNode(p, p.x, p.z, rot));
-      });
-
-      // Tracking info (para que se sienta “sistema”)
+      // tracking info
       const target = document.getElementById('target0');
-      target.addEventListener('targetFound', () => showToast('LOCK: objetivo detectado', 'info'));
-      target.addEventListener('targetLost',  () => showToast('SEARCH: reacoplando', 'warn'));
+      target.addEventListener('targetFound', () => { teleTrack.textContent = 'LOCK'; showToast('LOCK: objetivo detectado', 'info'); });
+      target.addEventListener('targetLost',  () => { teleTrack.textContent = 'SEARCH'; showToast('SEARCH: reacoplando', 'warn'); });
     }
 
-    boot().catch(console.error);
+    boot().catch(err => {
+      console.error(err);
+      showToast('Error cargando V2 (revisa rutas / nombres GLB)', 'alert');
+    });
   </script>
 </body>
 </html>
