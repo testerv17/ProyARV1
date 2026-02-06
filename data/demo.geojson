@@ -1,0 +1,10 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    { "type":"Feature", "properties":{"name":"Planta A","h":18,"type":"building"}, "geometry":{"type":"Point","coordinates":[-100.31738574018003, 25.69730346667882]} },
+    { "type":"Feature", "properties":{"name":"Almacén","h":10,"type":"building"}, "geometry":{"type":"Point","coordinates":[-100.31752521505253, 25.697243043373422]} },
+    { "type":"Feature", "properties":{"name":"Sensor Temp","h":2,"type":"sensor"}, "geometry":{"type":"Point","coordinates":[-100.31764725556594, 25.697194704707034]} },
+    { "type":"Feature", "properties":{"name":"Cámara IA","h":3,"type":"sensor"}, "geometry":{"type":"Point","coordinates":[-100.31742865553137, 25.697135489810865]} },
+    { "type":"Feature", "properties":{"name":"Luminaria","h":4,"type":"sensor"}, "geometry":{"type":"Point","coordinates":[-100.31709337940276, 25.69719591316848]} }
+  ]
+}

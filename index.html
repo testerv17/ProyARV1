@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ciudad Inteligente en Portataza</title>
+
+  <script src="https://aframe.io/releases/1.7.1/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+
+  <style>
+    body { margin:0; overflow:hidden; font-family:system-ui,sans-serif; }
+    .hud {
+      position:fixed; left:12px; top:12px; z-index:10;
+      background:rgba(0,0,0,.55); color:#fff;
+      padding:10px 12px; border-radius:10px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="hud">
+    <b>Proyecto 1 – Ciudad Inteligente</b><br/>
+    Apunta tu celular al portataza
+  </div>
+
+  <a-scene
+    mindar-image="imageTargetSrc: ./targets/targets.mind; autoStart: true;"
+    vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: true"
+    renderer="colorManagement: true; physicallyCorrectLights: true;"
+  >
+
+    <a-entity light="type: ambient; intensity: 0.9"></a-entity>
+    <a-entity light="type: directional; intensity: 0.8" position="1 2 1"></a-entity>
+
+    <!-- TARGET 0 = TU PORTATAZA -->
+    <a-entity mindar-image-target="targetIndex: 0">
+
+      <!-- Base sobre el portataza -->
+      <a-plane rotation="-90 0 0" width="1.2" height="1.2"
+               color="#111" material="opacity:0.25"></a-plane>
+
+      <!-- Mini ciudad demo -->
+      <a-box position="-0.20 0.10 -0.15" width="0.12" depth="0.12" height="0.20"
+             color="#2D7DFF"></a-box>
+
+      <a-box position="0.15 0.06 0.10" width="0.10" depth="0.10" height="0.12"
+             color="#2D7DFF"></a-box>
+
+      <a-sphere position="0.25 0.03 -0.10" radius="0.025"
+                color="#FFB200"
+                material="emissive:#FFB200; emissiveIntensity:0.6;"></a-sphere>
+
+      <a-text value="Gemelo Digital – Industria 4.0"
+              position="-0.45 0.02 0.45"
+              rotation="-90 0 0"
+              width="1.6"
+              color="#FFFFFF"></a-text>
+
+    </a-entity>
+
+    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+  </a-scene>
+</body>
+</html>
