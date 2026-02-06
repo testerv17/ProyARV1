@@ -3,65 +3,494 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Ciudad Inteligente en Portataza</title>
+  <title>Ciudad Inteligente AR (Demo Premium)</title>
 
   <script src="https://aframe.io/releases/1.7.1/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
   <style>
-    body { margin:0; overflow:hidden; font-family:system-ui,sans-serif; }
+    body { margin:0; overflow:hidden; font-family:system-ui, -apple-system, Segoe UI, Roboto, Arial; }
+
     .hud {
-      position:fixed; left:12px; top:12px; z-index:10;
-      background:rgba(0,0,0,.55); color:#fff;
-      padding:10px 12px; border-radius:10px;
+      position: fixed; left: 14px; top: 14px; z-index: 10;
+      background: rgba(0,0,0,.55); color: #fff;
+      padding: 10px 12px; border-radius: 14px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,.12);
+      max-width: 340px;
+    }
+    .hud b { font-size: 16px; }
+    .hud small { opacity: .85; display:block; margin-top: 6px; line-height: 1.2; }
+
+    /* Tarjeta de detalle (tap) */
+    .card {
+      position: fixed; left: 14px; bottom: 14px; z-index: 12;
+      width: min(420px, calc(100vw - 28px));
+      background: rgba(10,12,18,.72);
+      color: #fff;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.14);
+      backdrop-filter: blur(12px);
+      padding: 12px 12px 10px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+      display:none;
+    }
+    .card .row { display:flex; align-items:flex-start; gap: 10px; }
+    .chip {
+      display:inline-flex; align-items:center; gap:8px;
+      padding: 6px 10px; border-radius: 999px;
+      font-size: 12px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.12);
+      margin-top: 6px;
+    }
+    .dot { width:10px; height:10px; border-radius:50%; margin-top: 3px; }
+    .title { font-weight: 800; font-size: 15px; line-height: 1.1; }
+    .sub { opacity:.9; font-size: 12px; margin-top: 3px; }
+    .kpis { display:flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    .kpi {
+      flex:1; min-width: 120px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 14px;
+      padding: 10px;
+    }
+    .kpi .k { font-size: 11px; opacity:.85; }
+    .kpi .v { font-size: 16px; font-weight: 800; margin-top: 2px; }
+    .btn {
+      margin-top: 10px;
+      display:inline-flex; gap:8px; align-items:center;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: linear-gradient(135deg, rgba(45,125,255,.45), rgba(0,229,255,.25));
+      color: #fff; font-weight: 700;
+      cursor: pointer;
+      user-select:none;
+    }
+    .btn:active { transform: scale(.98); }
+    .x {
+      margin-left:auto;
+      opacity:.8;
+      cursor:pointer;
+      padding: 6px 8px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.06);
     }
   </style>
 </head>
 
 <body>
   <div class="hud">
-    <b>Proyecto 1 – Ciudad Inteligente</b><br/>
-    Apunta tu celular al portataza
+    <b>Proyecto 1 – Ciudad Inteligente (AR Premium)</b><br/>
+    Apunta al portataza y toca un elemento
+    <small>Tip: buena luz + sin reflejos. Si no engancha, aléjate 10–15 cm y vuelve.</small>
+  </div>
+
+  <div class="card" id="infoCard">
+    <div class="row">
+      <div class="dot" id="statusDot"></div>
+      <div style="flex:1">
+        <div class="title" id="cardTitle">—</div>
+        <div class="sub" id="cardSub">—</div>
+        <div class="chip" id="cardChip">—</div>
+      </div>
+      <div class="x" id="closeCard">✕</div>
+    </div>
+
+    <div class="kpis">
+      <div class="kpi">
+        <div class="k">KPI</div>
+        <div class="v" id="kpi1">—</div>
+      </div>
+      <div class="kpi">
+        <div class="k">Estado</div>
+        <div class="v" id="kpi2">—</div>
+      </div>
+      <div class="kpi">
+        <div class="k">Última señal</div>
+        <div class="v" id="kpi3">—</div>
+      </div>
+    </div>
+
+    <div class="btn" id="btnFocus">📍 Enfocar</div>
   </div>
 
   <a-scene
     mindar-image="imageTargetSrc: ./targets/targets.mind; autoStart: true;"
     vr-mode-ui="enabled: false"
     device-orientation-permission-ui="enabled: true"
-    renderer="colorManagement: true; physicallyCorrectLights: true;"
+    renderer="antialias: true; colorManagement: true; physicallyCorrectLights: true; alpha: true;"
   >
+    <!-- Luces “premium” -->
+    <a-entity light="type: ambient; intensity: 1.05"></a-entity>
+    <a-entity light="type: directional; intensity: 1.0" position="1.2 2.4 1.0"></a-entity>
+    <a-entity light="type: point; intensity: 0.7; distance: 2.5" position="0 0.6 0.2"></a-entity>
 
-    <a-entity light="type: ambient; intensity: 0.9"></a-entity>
-    <a-entity light="type: directional; intensity: 0.8" position="1 2 1"></a-entity>
+    <!-- Target -->
+    <a-entity mindar-image-target="targetIndex: 0" id="target0">
+      <!-- Plataforma holográfica -->
+      <a-entity id="stage">
+        <!-- Base glass -->
+        <a-plane rotation="-90 0 0" width="1.25" height="1.25"
+                 material="color:#0b1220; opacity:0.28; transparent:true; metalness:0.2; roughness:0.2"></a-plane>
 
-    <!-- TARGET 0 = TU PORTATAZA -->
-    <a-entity mindar-image-target="targetIndex: 0">
+        <!-- Grid neon (wireframe) -->
+        <a-plane rotation="-90 0 0" width="1.18" height="1.18"
+                 material="color:#00e5ff; opacity:0.12; transparent:true; wireframe:true"></a-plane>
 
-      <!-- Base sobre el portataza -->
-      <a-plane rotation="-90 0 0" width="1.2" height="1.2"
-               color="#111" material="opacity:0.25"></a-plane>
+        <!-- Anillo de escaneo -->
+        <a-ring position="0 0.01 0" rotation="-90 0 0" radius-inner="0.18" radius-outer="0.195"
+                material="color:#00e5ff; opacity:0.55; transparent:true; emissive:#00e5ff; emissiveIntensity:0.7">
+          <a-animation attribute="scale" to="3.1 3.1 3.1" dur="2200" easing="easeOutQuad" repeat="indefinite"></a-animation>
+          <a-animation attribute="material.opacity" to="0.0" dur="2200" easing="easeOutQuad" repeat="indefinite"></a-animation>
+        </a-ring>
 
-      <!-- Mini ciudad demo -->
-      <a-box position="-0.20 0.10 -0.15" width="0.12" depth="0.12" height="0.20"
-             color="#2D7DFF"></a-box>
+        <!-- Header holográfico -->
+        <a-entity position="0 0.18 0">
+          <a-plane width="0.95" height="0.16" position="0 0 0"
+                   material="color:#0b1220; opacity:0.22; transparent:true; metalness:0.1; roughness:0.3"></a-plane>
+          <a-text value="GEMELO DIGITAL · INDUSTRIA 4.0"
+                  position="0 0.01 0.01"
+                  align="center"
+                  width="1.6"
+                  color="#EAF6FF"></a-text>
+          <a-text value="Demo WebAR Open Source"
+                  position="0 -0.05 0.01"
+                  align="center"
+                  width="1.2"
+                  color="#9DEBFF"></a-text>
+        </a-entity>
+      </a-entity>
 
-      <a-box position="0.15 0.06 0.10" width="0.10" depth="0.10" height="0.12"
-             color="#2D7DFF"></a-box>
+      <!-- Root para la ciudad generada -->
+      <a-entity id="cityRoot"></a-entity>
 
-      <a-sphere position="0.25 0.03 -0.10" radius="0.025"
-                color="#FFB200"
-                material="emissive:#FFB200; emissiveIntensity:0.6;"></a-sphere>
-
-      <a-text value="Gemelo Digital – Industria 4.0"
-              position="-0.45 0.02 0.45"
-              rotation="-90 0 0"
-              width="1.6"
-              color="#FFFFFF"></a-text>
-
+      <!-- Ruta demo (se actualiza al cargar datos) -->
+      <a-entity id="routeRoot"></a-entity>
     </a-entity>
 
-    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
-
+    <!-- Cámara + cursor para “tap” -->
+    <a-camera position="0 0 0" look-controls="enabled: false">
+      <a-cursor
+        raycaster="objects: .pickable"
+        material="color:#00e5ff; opacity:0.9"
+        fuse="false"></a-cursor>
+    </a-camera>
   </a-scene>
+
+  <script>
+    // ========= Utilidades geo =========
+    function llToMeters(lon, lat, centerLon, centerLat) {
+      const R = 6378137;
+      const dLat = (lat - centerLat) * Math.PI / 180;
+      const dLon = (lon - centerLon) * Math.PI / 180;
+      const x = dLon * R * Math.cos(centerLat * Math.PI/180);
+      const z = dLat * R;
+      return { x, z };
+    }
+    function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
+    function randInt(a,b){ return Math.floor(a + Math.random()*(b-a+1)); }
+
+    // ========= UI Card =========
+    const card = document.getElementById('infoCard');
+    const closeCard = document.getElementById('closeCard');
+    const btnFocus = document.getElementById('btnFocus');
+    const statusDot = document.getElementById('statusDot');
+    const cardTitle = document.getElementById('cardTitle');
+    const cardSub = document.getElementById('cardSub');
+    const cardChip = document.getElementById('cardChip');
+    const kpi1 = document.getElementById('kpi1');
+    const kpi2 = document.getElementById('kpi2');
+    const kpi3 = document.getElementById('kpi3');
+
+    closeCard.onclick = () => card.style.display = 'none';
+
+    let lastSelectedEl = null;
+
+    btnFocus.onclick = () => {
+      if (!lastSelectedEl) return;
+      // “Focus” = animación ligera (feedback)
+      lastSelectedEl.setAttribute('animation__punch', 'property: scale; to: 1.25 1.25 1.25; dir: alternate; dur: 180; loop: 2; easing: easeOutQuad');
+    };
+
+    function showCard(meta){
+      const { name, type, status, kpi, lastSeen } = meta;
+      cardTitle.textContent = name || 'Elemento';
+      cardSub.textContent = (type === 'building') ? 'Activo / Infraestructura' : 'Sensor / IoT';
+      cardChip.textContent = `Tipo: ${type} · ID: ${meta.id}`;
+      kpi1.textContent = kpi;
+      kpi2.textContent = status.toUpperCase();
+      kpi3.textContent = lastSeen;
+
+      // color del dot
+      const dotColor = status === 'alert' ? '#ff3b3b' : (status === 'warn' ? '#ffb200' : '#18ff9a');
+      statusDot.style.background = dotColor;
+      statusDot.style.boxShadow = `0 0 18px ${dotColor}`;
+
+      card.style.display = 'block';
+    }
+
+    // ========= Render premium =========
+    function makeNeonPillar(x, z, h, status) {
+      const g = document.createElement('a-entity');
+      g.setAttribute('position', `${x} 0 ${z}`);
+
+      // “Edificio” (cuerpo)
+      const body = document.createElement('a-box');
+      const baseW = 0.09;
+      const baseD = 0.09;
+
+      const height = h;
+      body.setAttribute('width', baseW);
+      body.setAttribute('depth', baseD);
+      body.setAttribute('height', height);
+      body.setAttribute('position', `0 ${height/2} 0`);
+      body.classList.add('pickable');
+
+      // Paleta por estado
+      let color = '#2D7DFF';
+      let emissive = '#2D7DFF';
+      if (status === 'alert') { color = '#FF3B3B'; emissive = '#FF3B3B'; }
+      else if (status === 'warn') { color = '#FFB200'; emissive = '#FFB200'; }
+
+      body.setAttribute('material', `color:${color}; opacity:0.92; transparent:true; metalness:0.25; roughness:0.32; emissive:${emissive}; emissiveIntensity:0.25`);
+      g.appendChild(body);
+
+      // “Cap” superior (brillo)
+      const cap = document.createElement('a-box');
+      cap.setAttribute('width', baseW*1.08);
+      cap.setAttribute('depth', baseD*1.08);
+      cap.setAttribute('height', 0.02);
+      cap.setAttribute('position', `0 ${height + 0.01} 0`);
+      cap.setAttribute('material', `color:#00E5FF; opacity:0.35; transparent:true; emissive:#00E5FF; emissiveIntensity:0.7; metalness:0.1; roughness:0.15`);
+      g.appendChild(cap);
+
+      // Outline wireframe (look “tech”)
+      const outline = document.createElement('a-box');
+      outline.setAttribute('width', baseW*1.02);
+      outline.setAttribute('depth', baseD*1.02);
+      outline.setAttribute('height', height*1.01);
+      outline.setAttribute('position', `0 ${height/2} 0`);
+      outline.setAttribute('material', `color:#00E5FF; opacity:0.18; transparent:true; wireframe:true`);
+      g.appendChild(outline);
+
+      // Halo base
+      const halo = document.createElement('a-ring');
+      halo.setAttribute('rotation', '-90 0 0');
+      halo.setAttribute('radius-inner', '0.045');
+      halo.setAttribute('radius-outer', '0.055');
+      halo.setAttribute('position', `0 0.012 0`);
+      halo.setAttribute('material', `color:#00E5FF; opacity:0.45; transparent:true; emissive:#00E5FF; emissiveIntensity:0.6`);
+      halo.setAttribute('animation', 'property: rotation; to: -90 360 0; loop: true; dur: 6000; easing: linear');
+      g.appendChild(halo);
+
+      return { group: g, pick: body };
+    }
+
+    function makeSensorNode(x, z, status) {
+      const g = document.createElement('a-entity');
+      g.setAttribute('position', `${x} 0 ${z}`);
+
+      let color = '#FFB200';
+      let emissive = '#FFB200';
+      if (status === 'alert') { color = '#FF3B3B'; emissive = '#FF3B3B'; }
+      else if (status === 'ok') { color = '#18FF9A'; emissive = '#18FF9A'; }
+
+      const core = document.createElement('a-sphere');
+      core.setAttribute('radius', '0.022');
+      core.setAttribute('position', `0 0.032 0`);
+      core.classList.add('pickable');
+      core.setAttribute('material', `color:${color}; emissive:${emissive}; emissiveIntensity:0.85; metalness:0.1; roughness:0.25; opacity:0.95; transparent:true`);
+      core.setAttribute('animation', 'property: scale; to: 1.35 1.35 1.35; dir: alternate; loop: true; dur: 950; easing: easeInOutSine');
+      g.appendChild(core);
+
+      // Ondas
+      const wave = document.createElement('a-ring');
+      wave.setAttribute('rotation', '-90 0 0');
+      wave.setAttribute('radius-inner', '0.015');
+      wave.setAttribute('radius-outer', '0.022');
+      wave.setAttribute('position', `0 0.012 0`);
+      wave.setAttribute('material', `color:${emissive}; opacity:0.55; transparent:true; emissive:${emissive}; emissiveIntensity:0.7`);
+      wave.setAttribute('animation__s', 'property: scale; to: 3.0 3.0 3.0; loop: true; dur: 1500; easing: easeOutQuad');
+      wave.setAttribute('animation__o', 'property: material.opacity; to: 0.0; loop: true; dur: 1500; easing: easeOutQuad');
+      g.appendChild(wave);
+
+      // Pin
+      const pin = document.createElement('a-cylinder');
+      pin.setAttribute('radius', '0.006');
+      pin.setAttribute('height', '0.05');
+      pin.setAttribute('position', `0 0.025 0`);
+      pin.setAttribute('material', `color:#0b1220; opacity:0.35; transparent:true; metalness:0.2; roughness:0.4`);
+      g.appendChild(pin);
+
+      return { group: g, pick: core };
+    }
+
+    function makeBillboardLabel(text, x, y, z, tone) {
+      const wrap = document.createElement('a-entity');
+      wrap.setAttribute('position', `${x} ${y} ${z}`);
+      wrap.setAttribute('look-at', '[camera]');
+
+      // fondo
+      const bg = document.createElement('a-plane');
+      bg.setAttribute('width', '0.26');
+      bg.setAttribute('height', '0.08');
+      bg.setAttribute('material', `color:#0b1220; opacity:0.35; transparent:true; metalness:0.1; roughness:0.3`);
+      wrap.appendChild(bg);
+
+      // borde wireframe
+      const border = document.createElement('a-plane');
+      border.setAttribute('width', '0.268');
+      border.setAttribute('height', '0.088');
+      border.setAttribute('position', '0 0 0.001');
+      border.setAttribute('material', `color:${tone}; opacity:0.25; transparent:true; wireframe:true`);
+      wrap.appendChild(border);
+
+      const t = document.createElement('a-text');
+      t.setAttribute('value', text);
+      t.setAttribute('align', 'center');
+      t.setAttribute('color', tone);
+      t.setAttribute('width', '0.9');
+      t.setAttribute('position', `0 -0.015 0.01`);
+      wrap.appendChild(t);
+
+      return wrap;
+    }
+
+    function makeLine(x1,z1,x2,z2, color) {
+      const line = document.createElement('a-entity');
+      // A-Frame line component: start/end
+      line.setAttribute('line', `start: ${x1} 0.03 ${z1}; end: ${x2} 0.03 ${z2}; color: ${color}; opacity: 0.55`);
+      return line;
+    }
+
+    // ========= Carga GeoJSON y genera escena =========
+    async function loadCityPremium() {
+      const res = await fetch("./data/demo.geojson");
+      const geojson = await res.json();
+
+      // Validación mínima de orden lon/lat
+      // (si detectamos "lat primero" con lat ~ 25 y lon ~ -100 en posición 0, lo avisamos en consola)
+      const test = geojson.features?.[0]?.geometry?.coordinates;
+      if (Array.isArray(test) && test.length === 2) {
+        const a = test[0], b = test[1];
+        if (a > 0 && a < 90 && b < -10) {
+          console.warn("Parece que tus coordinates están como [lat,lon]. GeoJSON debe ser [lon,lat].");
+        }
+      }
+
+      const features = geojson.features.filter(f => f.geometry?.type === 'Point');
+      const coords = features.map(f => f.geometry.coordinates);
+
+      // Centro promedio
+      const avgLon = coords.reduce((s,c)=>s+c[0],0) / coords.length;
+      const avgLat = coords.reduce((s,c)=>s+c[1],0) / coords.length;
+
+      // Convertimos y normalizamos
+      const points = features.map((f, idx) => {
+        const [lon, lat] = f.geometry.coordinates; // lon,lat correcto
+        const m = llToMeters(lon, lat, avgLon, avgLat);
+
+        // Escala “mesa”: baja = compacto, alta = más separado
+        const SCALE = 0.015;
+
+        const x = m.x * SCALE;
+        const z = -m.z * SCALE;
+
+        // Status/KPI “demo industrial”
+        const p = f.properties || {};
+        const type = p.type || 'sensor';
+        const hMeters = clamp(Number(p.h || 3), 1, 60);
+
+        // Convertimos altura a unidades A-Frame (hUnits)
+        // Lo hacemos con un factor independiente para que se vea espectacular
+        const heightUnits = (hMeters * SCALE) * 1.35;
+
+        // Status: si el geojson ya trae status, lo usamos; si no, generamos uno
+        const status = p.status || (type === 'building'
+          ? (Math.random() < 0.12 ? 'alert' : (Math.random() < 0.22 ? 'warn' : 'ok'))
+          : (Math.random() < 0.10 ? 'alert' : (Math.random() < 0.25 ? 'warn' : 'ok')));
+
+        // KPI demo
+        const kpi = (type === 'building')
+          ? `${randInt(65, 98)}% carga`
+          : `${randInt(18, 85)} ms`;
+
+        const lastSeen = `${randInt(1, 59)}s`;
+
+        return { id: idx+1, f, p, type, x, z, heightUnits, status, kpi, lastSeen };
+      });
+
+      const cityRoot = document.getElementById("cityRoot");
+      const routeRoot = document.getElementById("routeRoot");
+      cityRoot.innerHTML = "";
+      routeRoot.innerHTML = "";
+
+      // Dibujar “calles” / conexiones (líneas neon entre puntos cercanos)
+      // Conexión simple: conecta sensores al edificio más cercano
+      const buildings = points.filter(p => p.type === 'building');
+      const sensors = points.filter(p => p.type !== 'building');
+
+      sensors.forEach(s => {
+        let best = null, bestD = Infinity;
+        buildings.forEach(b => {
+          const dx = s.x - b.x, dz = s.z - b.z;
+          const d = dx*dx + dz*dz;
+          if (d < bestD) { bestD = d; best = b; }
+        });
+        if (best) {
+          const color = (s.status === 'alert' || best.status === 'alert') ? '#FF3B3B' : '#00E5FF';
+          routeRoot.appendChild(makeLine(s.x, s.z, best.x, best.z, color));
+        }
+      });
+
+      // Render puntos (edificios / sensores)
+      points.forEach(pt => {
+        const name = pt.p.name || (pt.type === 'building' ? 'Edificio' : 'Sensor');
+        if (pt.type === 'building') {
+          const { group, pick } = makeNeonPillar(pt.x, pt.z, pt.heightUnits, pt.status);
+
+          // Label flotante
+          const tone = pt.status === 'alert' ? '#FF3B3B' : (pt.status === 'warn' ? '#FFB200' : '#00E5FF');
+          const label = makeBillboardLabel(name, pt.x, pt.heightUnits + 0.08, pt.z, tone);
+          group.appendChild(label);
+
+          // Click meta
+          pick.dataset.meta = JSON.stringify({
+            id: pt.id, name, type: pt.type, status: pt.status, kpi: pt.kpi, lastSeen: pt.lastSeen
+          });
+
+          pick.addEventListener('click', (e) => {
+            lastSelectedEl = pick;
+            showCard(JSON.parse(pick.dataset.meta));
+          });
+
+          cityRoot.appendChild(group);
+        } else {
+          const { group, pick } = makeSensorNode(pt.x, pt.z, pt.status);
+
+          const tone = pt.status === 'alert' ? '#FF3B3B' : (pt.status === 'warn' ? '#FFB200' : '#18FF9A');
+          const label = makeBillboardLabel(name, pt.x, 0.12, pt.z, tone);
+          group.appendChild(label);
+
+          pick.dataset.meta = JSON.stringify({
+            id: pt.id, name, type: pt.type, status: pt.status, kpi: pt.kpi, lastSeen: pt.lastSeen
+          });
+
+          pick.addEventListener('click', (e) => {
+            lastSelectedEl = pick;
+            showCard(JSON.parse(pick.dataset.meta));
+          });
+
+          cityRoot.appendChild(group);
+        }
+      });
+    }
+
+    // Cargar al iniciar
+    loadCityPremium().catch(console.error);
+  </script>
 </body>
 </html>
